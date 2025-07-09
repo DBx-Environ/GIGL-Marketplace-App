@@ -33,6 +33,6 @@ jobs:
           repoToken: '${{ secrets.GITHUB_TOKEN }}' # GitHub's built-in token for repository access.
           # This secret is automatically created by the Firebase CLI during 'firebase init'
           # when you choose to set up GitHub Actions. It contains the service account key.
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_GIGLMARKETPLACEAPP_25686 }}' # Replace with your actual secret name if different
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_GIGLMARKETPLACEAPP }}' # Replace with your actual secret name if different
           channelId: live # Deploys to your live site (default channel).
           projectId: gigl-marketplace-app # Replace with your actual Firebase Project ID.
