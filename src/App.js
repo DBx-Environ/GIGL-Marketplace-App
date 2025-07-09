@@ -113,7 +113,7 @@ const WelcomePage = ({ navigate }) => {
     return (
         <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl flex flex-col items-center mb-8">
             <div className="mb-6">
-                <img src="https://placehold.co/150x50/cccccc/333333?text=Your+Logo" alt="GIGL Marketplace Logo" className="h-16 w-auto mx-auto rounded-md" />
+                <img src="/gigl-logo.png" alt="GIGL Marketplace Logo" className="h-16 w-auto mx-auto rounded-md" />
             </div>
             <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">Welcome to the GIGL Marketplace</h1>
 
