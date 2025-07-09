@@ -777,7 +777,7 @@ export default function App() {
                         <span className="text-gray-400">|</span>
                         <a href="javascript:void(0);" className="text-blue-600 hover:underline">Privacy Policy</a>
                         <span className="text-gray-400">|</span>
-                        <a href="mailto:info@gigl.com" className="text-blue-600 hover:underline">Email</a>
+                        <a href="mailto:david@baxterenvironmental.co.uk" className="text-blue-600 hover:underline">Email</a>
                     </div>
                 </footer>
             </div>
