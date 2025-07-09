@@ -1,0 +1,38 @@
+# This file defines a GitHub Actions workflow for deploying your React app
+# to Firebase Hosting when changes are merged into the 'main' branch.
+
+name: Deploy to Firebase Hosting on merge
+
+on:
+  push:
+    branches:
+      - main # This workflow triggers on pushes to the 'main' branch.
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest # Specifies the operating system for the job.
+
+    steps:
+      - name: Checkout code # Step 1: Clones your repository into the workflow environment.
+        uses: actions/checkout@v4 # Uses the official GitHub action for checking out code.
+
+      - name: Set up Node.js # Step 2: Sets up the Node.js environment required for your React app.
+        uses: actions/setup-node@v4 # Uses the official GitHub action for setting up Node.js.
+        with:
+          node-version: '20' # Specify the Node.js version your project uses (e.g., '18', '20').
+
+      - name: Install dependencies # Step 3: Installs all project dependencies from package.json.
+        run: npm ci # 'npm ci' is used for clean and consistent installs in CI environments.
+
+      - name: Build React app # Step 4: Executes your React application's build script.
+        run: npm run build # This command compiles your React code into the 'build' folder.
+
+      - name: Deploy to Firebase Hosting # Step 5: Deploys the built application to Firebase Hosting.
+        uses: FirebaseExtended/action-hosting-deploy@v0 # Uses the official Firebase Hosting GitHub Action.
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}' # GitHub's built-in token for repository access.
+          # This secret is automatically created by the Firebase CLI during 'firebase init'
+          # when you choose to set up GitHub Actions. It contains the service account key.
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_GIGLMARKETPLACEAPP }}' # Replace with your actual secret name if different
+          channelId: live # Deploys to your live site (default channel).
+          projectId: gigl-marketplace-app # Replace with your actual Firebase Project ID.
