@@ -1,0 +1,51 @@
+type User @table {
+  username: String!
+  email: String!
+  userType: String! # e.g., 'Project Owner', 'Bidder', 'Admin'
+  createdAt: Timestamp!
+  displayName: String
+  organizationName: String
+  bio: String
+  contactInfo: String
+  profilePhotoUrl: String
+  updatedAt: Timestamp
+}
+
+type Category @table {
+  name: String! # e.g., "Reforestation", "Wetland Restoration"
+  description: String
+}
+
+type Project @table {
+  title: String!
+  description: String!
+  owner: User! # References the User who owns the project
+  status: String! # e.g., 'Draft', 'Open for Bids', 'Awarded'
+  createdAt: Timestamp!
+  location: String # Text description or geo-coordinates
+  estimatedBudget: Float
+  startDate: Date
+  endDate: Date
+  coverImageUrl: String
+  goals: String
+  metrics: String
+  updatedAt: Timestamp
+}
+
+type Bid @table {
+  project: Project! # References the Project the bid is for
+  bidder: User! # References the User who submitted the bid
+  bidAmount: Float!
+  proposalText: String!
+  status: String! # e.g., 'Submitted', 'Accepted', 'Rejected'
+  createdAt: Timestamp!
+  estimatedCompletionDate: Date
+  qualificationsAttachedUrl: String
+  updatedAt: Timestamp
+}
+
+type ProjectCategoryLink @table(key: ["project", "category"]) {
+  project: Project! # References a Project
+  category: Category! # References a Category
+  createdAt: Timestamp!
+}

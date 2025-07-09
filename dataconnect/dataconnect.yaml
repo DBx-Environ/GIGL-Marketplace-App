@@ -1,0 +1,12 @@
+specVersion: "v1"
+serviceId: "gigl-marketplace-app"
+location: "europe-west2"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "postgres"
+      cloudSql:
+        instanceId: "gigl-marketplace-app"
+      # schemaValidation: "COMPATIBLE"
+connectorDirs: ["./connector"]
