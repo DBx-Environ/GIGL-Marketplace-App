@@ -38,17 +38,34 @@ jobs:
       - name: Build React app
         run: npm run build
 
+      # --- START OF EXAMPLE INSERTED STEP ---
+      - name: Run Cloud Functions tests (example)
+        # This step assumes you have tests defined in your functions/package.json
+        # For example: "test": "mocha functions/test/*.test.js"
+        # You would need to write actual test files in your functions/ directory.
+        run: |
+          cd functions # Navigate into the functions directory
+          npm test     # Run your test script
+        # Add 'continue-on-error: true' if you want the workflow to proceed
+        # even if tests fail (not recommended for production)
+        # continue-on-error: true
+      # --- END OF EXAMPLE INSERTED STEP ---
+
       # --- Cloud Functions Deployment Steps ---
+      - name: Add Google Cloud GPG key
+        run: |
+          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+
       - name: Install gcloud CLI
         run: |
           echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
           sudo apt-get update
-          sudo apt-get install google-cloud-cli -y # Added -y for non-interactive install
+          sudo apt-get install google-cloud-cli -y
 
       - name: Authenticate gcloud CLI
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }} # Use the service account JSON key secret
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GIGL_MARKETPLACE_APP }} # Use the service account JSON key secret
 
       - name: Deploy Cloud Function
         run: |
@@ -66,6 +83,6 @@ jobs:
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_GIGLMARKETPLACEAPP_25686 }}' # Replace with your actual secret name
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_GIGL_MARKETPLACE_APP }}' # Replace with your actual secret name
           channelId: live
           projectId: ${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }} # Use project ID from secrets
