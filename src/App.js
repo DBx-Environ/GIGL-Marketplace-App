@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, onAuthStateChanged, signOut, updateProfile } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, onAuthStateChanged, signOut, updateProfile, sendPasswordResetEmail } from 'firebase/auth'; // Added sendPasswordResetEmail
 import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, serverTimestamp, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 // --- Context for User and Firebase Instances ---
@@ -30,16 +30,31 @@ const WelcomePage = ({ navigate }) => {
     const [registerPassword, setRegisterPassword] = useState('');
     const [loginEmail, setLoginEmail] = useState('');
     const [loginPassword, setLoginPassword] = useState('');
+    const [showRegisterPassword, setShowRegisterPassword] = useState(false); // State for password visibility
+    const [showLoginPassword, setShowLoginPassword] = useState(false); // State for password visibility
 
     const { auth, db, showMessageBox, appId } = useContext(AppContext);
+
+    // Function to validate password policy
+    const validatePassword = (password) => {
+        if (password.length < 8) {
+            return "Password must be at least 8 characters long.";
+        }
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+            return "Password must contain at least one special symbol.";
+        }
+        return null; // Password is valid
+    };
 
     const handleRegister = async () => {
         if (!registerEmail || !registerPassword) {
             showMessageBox("Please enter both email and password for registration.");
             return;
         }
-        if (registerPassword.length < 6) {
-            showMessageBox("Password should be at least 6 characters long.");
+
+        const passwordError = validatePassword(registerPassword);
+        if (passwordError) {
+            showMessageBox(passwordError);
             return;
         }
 
@@ -48,6 +63,8 @@ const WelcomePage = ({ navigate }) => {
             const user = userCredential.user;
 
             await sendEmailVerification(user);
+            // After registration, sign out the user so they MUST verify email before logging in
+            await auth.signOut();
 
             // Create a user document in Firestore
             await setDoc(doc(db, `artifacts/${appId}/users/${user.uid}`), {
@@ -67,7 +84,6 @@ const WelcomePage = ({ navigate }) => {
                 errorMessage = "This email is already in use. Please try logging in or use a different email.";
             } else if (error.code === 'auth/invalid-email') {
                 errorMessage = "Invalid email address format.";
-                // Specific Firebase Auth error code for weak password
             } else if (error.code === 'auth/weak-password') {
                 errorMessage = "Password is too weak. Please choose a stronger password.";
             }
@@ -114,12 +130,30 @@ const WelcomePage = ({ navigate }) => {
         }
     };
 
+    const handleForgotPassword = async () => {
+        if (!loginEmail) {
+            showMessageBox("Please enter your email address in the Login section to reset your password.");
+            return;
+        }
+        try {
+            await sendPasswordResetEmail(auth, loginEmail);
+            showMessageBox(`Password reset email sent to ${loginEmail}. Please check your inbox.`);
+        } catch (error) {
+            console.error("Error sending password reset email:", error);
+            let errorMessage = "Failed to send password reset email.";
+            if (error.code === 'auth/user-not-found') {
+                errorMessage = "No user found with that email address.";
+            } else if (error.code === 'auth/invalid-email') {
+                errorMessage = "Invalid email address format.";
+            } else {
+                errorMessage = `Failed to send password reset email: ${error.message}`;
+            }
+            showMessageBox(errorMessage);
+        }
+    };
+
     return (
         <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl flex flex-col items-center mb-8">
-            <div className="mb-6">
-                {/* Ensure your logo file is in the public/ folder and the name matches exactly */}
-                <img src="/GIGL_Logo.png" alt="GIGL Marketplace Logo" className="h-16 w-auto mx-auto rounded-md" />
-            </div>
             <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">Welcome to the GIGL Marketplace</h1>
 
             <div className="w-full flex flex-col md:flex-row gap-8">
@@ -130,10 +164,14 @@ const WelcomePage = ({ navigate }) => {
                         <input type="email" id="registerEmail" placeholder="your.email@example.com" value={registerEmail} onChange={(e) => setRegisterEmail(e.target.value)}
                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
                     </div>
-                    <div className="mb-6">
+                    <div className="mb-6 relative">
                         <label htmlFor="registerPassword" className="block text-gray-700 text-sm font-medium mb-2">Password:</label>
-                        <input type="password" id="registerPassword" placeholder="********" value={registerPassword} onChange={(e) => setRegisterPassword(e.target.value)}
-                               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        <input type={showRegisterPassword ? "text" : "password"} id="registerPassword" placeholder="********" value={registerPassword} onChange={(e) => setRegisterPassword(e.target.value)}
+                               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10" />
+                        <button type="button" onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 mt-7">
+                            {showRegisterPassword ? 'Hide' : 'Show'}
+                        </button>
                     </div>
                     <button onClick={handleRegister} className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out shadow-md">
                         Register
@@ -147,13 +185,21 @@ const WelcomePage = ({ navigate }) => {
                         <input type="email" id="loginEmail" placeholder="your.email@example.com" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)}
                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
                     </div>
-                    <div className="mb-6">
+                    <div className="mb-6 relative">
                         <label htmlFor="loginPassword" className="block text-gray-700 text-sm font-medium mb-2">Password:</label>
-                        <input type="password" id="loginPassword" placeholder="********" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)}
-                               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" />
+                        <input type={showLoginPassword ? "text" : "password"} id="loginPassword" placeholder="********" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)}
+                               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 pr-10" />
+                        <button type="button" onClick={() => setShowLoginPassword(!showLoginPassword)}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 mt-7">
+                            {showLoginPassword ? 'Hide' : 'Show'}
+                        </button>
                     </div>
                     <button onClick={handleLogin} className="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition duration-300 ease-in-out shadow-md">
                         Login
+                    </button>
+                    <button type="button" onClick={handleForgotPassword}
+                            className="mt-3 w-full text-blue-600 hover:underline text-sm text-center">
+                        Forgotten password?
                     </button>
                 </div>
             </div>
@@ -165,7 +211,8 @@ const WelcomePage = ({ navigate }) => {
 const AccountPage = ({ navigate }) => {
     const { currentUser, userDetails, updateUserDetails, bids, bidOpportunities, showMessageBox, auth } = useContext(AppContext);
     const [userName, setUserName] = useState(userDetails?.name || '');
-    const [isEditing, setIsEditing] = useState(false);
+    // Removed isEditing state and related buttons for direct input
+    // const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
         setUserName(userDetails?.name || '');
@@ -185,7 +232,7 @@ const AccountPage = ({ navigate }) => {
             await updateProfile(currentUser, { displayName: userName.trim() });
             await updateUserDetails(currentUser.uid, { name: userName.trim() });
             showMessageBox("Profile updated successfully!");
-            setIsEditing(false);
+            // setIsEditing(false); // No longer needed
         } catch (error) {
             console.error("Error updating profile:", error);
             showMessageBox(`Failed to update profile: ${error.message}`);
@@ -209,30 +256,14 @@ const AccountPage = ({ navigate }) => {
                     <p className="text-gray-600"><strong>Email:</strong> {currentUser?.email}</p>
                     <p className="text-gray-600 flex items-center">
                         <strong>Name:</strong>
-                        {isEditing ? (
-                            <input
-                                type="text"
-                                value={userName}
-                                onChange={(e) => setUserName(e.target.value)}
-                                className="ml-2 p-2 border border-gray-300 rounded-md flex-grow"
-                            />
-                        ) : (
-                            <span className="ml-2">{userDetails?.name || 'Not set'}</span>
-                        )}
-                        <button
-                            onClick={() => setIsEditing(!isEditing)}
-                            className="ml-4 px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition duration-300"
-                        >
-                            {isEditing ? 'Cancel' : 'Edit'}
-                        </button>
-                        {isEditing && (
-                            <button
-                                onClick={handleUpdateProfile}
-                                className="ml-2 px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300"
-                            >
-                                Save
-                            </button>
-                        )}
+                        <input
+                            type="text"
+                            value={userName}
+                            onChange={(e) => setUserName(e.target.value)}
+                            onBlur={handleUpdateProfile} // Update on blur
+                            className="ml-2 p-2 border border-gray-300 rounded-md flex-grow"
+                        />
+                        {/* Removed Edit/Save/Cancel buttons for direct input */}
                     </p>
                 </div>
             </div>
@@ -605,6 +636,7 @@ const AdminPage = ({ navigate }) => {
 // REACT_APP_FIREBASE_MESSAGING_SENDER_ID="1234567890"
 // REACT_APP_FIREBASE_APP_ID="1:1234567890:web:abcdef1234567890abcdef"
 // REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS="gigl-marketplace"
+// REACT_APP_CONTACT_EMAIL="david@baxterenvironmental.co.uk"
 
 const YOUR_FIREBASE_CONFIG = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -617,6 +649,7 @@ const YOUR_FIREBASE_CONFIG = {
 };
 
 const MY_APP_ID_FOR_FIRESTORE_PATHS = process.env.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS || "gigl-marketplace";
+const CONTACT_EMAIL = process.env.REACT_APP_CONTACT_EMAIL || "info@gigl.com"; // Default if not set in .env
 
 
 // --- Main App Component ---
@@ -760,39 +793,53 @@ export default function App() {
             );
         }
 
-        switch (currentPage) {
-            case 'welcome':
-                return <WelcomePage navigate={navigate} />;
-            case 'account':
-                return <AccountPage navigate={navigate} />;
-            case 'existingBids':
-                return <ExistingBidsPage navigate={navigate} />;
-            case 'bidOpportunities':
-                return <BidOpportunitiesPage navigate={navigate} />;
-            case 'admin':
-                return <AdminPage navigate={navigate} />;
-            default:
-                return <WelcomePage navigate={navigate} />;
-        }
-    };
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-between p-4 bg-f0f2f5 w-full">
+                {/* Global Header with Logo */}
+                <header className="w-full max-w-4xl bg-white p-4 rounded-xl shadow-lg mb-8 flex items-center justify-center">
+                    {/* Ensure your logo file is in the public/ folder and the name matches exactly */}
+                    <img src="/GIGL_Logo.png" alt="GIGL Marketplace Logo" className="h-20 w-auto max-w-full rounded-md" /> {/* Larger and responsive */}
+                </header>
 
-    return (
-        <AppContext.Provider value={{ auth: firebaseAuth, db: firestoreDb, currentUser, userDetails, updateUserDetails, bids, bidOpportunities, showMessageBox, appId: MY_APP_ID_FOR_FIRESTORE_PATHS }}>
-            <div className="min-h-screen flex flex-col items-center justify-between p-4 bg-f0f2f5">
-                {renderPage()}
-                <MessageBox message={message} onClose={closeMessageBox} />
+                {/* Main Content Area */}
+                <main className="flex-grow flex items-center justify-center w-full">
+                    {(() => { // Using an IIFE for conditional rendering
+                        switch (currentPage) {
+                            case 'welcome':
+                                return <WelcomePage navigate={navigate} />;
+                            case 'account':
+                                return <AccountPage navigate={navigate} />;
+                            case 'existingBids':
+                                return <ExistingBidsPage navigate={navigate} />;
+                            case 'bidOpportunities':
+                                return <BidOpportunitiesPage navigate={navigate} />;
+                            case 'admin':
+                                return <AdminPage navigate={navigate} />;
+                            default:
+                                return <WelcomePage navigate={navigate} />;
+                        }
+                    })()}
+                </main>
+
+                {/* Footer (remains outside main for consistent positioning) */}
                 <footer className="w-full max-w-2xl text-center text-gray-600 text-sm mt-8 p-4">
                     <p className="mb-2">&copy; {new Date().getFullYear()} GIGL Limited. All rights reserved.</p>
                     <div className="flex justify-center space-x-4">
-                        {/* Corrected: Using <button> tags for non-navigational actions to satisfy a11y rules */}
                         <button type="button" onClick={() => showMessageBox("Terms and Conditions link clicked. Replace this action with navigation to your actual URL.")} className="text-blue-600 hover:underline px-2 py-1 rounded-md">Terms and Conditions</button>
                         <span className="text-gray-400">|</span>
                         <button type="button" onClick={() => showMessageBox("Privacy Policy link clicked. Replace this action with navigation to your actual URL.")} className="text-blue-600 hover:underline px-2 py-1 rounded-md">Privacy Policy</button>
                         <span className="text-gray-400">|</span>
-                        <a href="mailto:david@baxterenvironmental.co.uk" className="text-blue-600 hover:underline">Email</a>
+                        <a href={`mailto:${CONTACT_EMAIL}`} className="text-blue-600 hover:underline">Email</a>
                     </div>
                 </footer>
             </div>
+        );
+    };
+
+    return (
+        <AppContext.Provider value={{ auth: firebaseAuth, db: firestoreDb, currentUser, userDetails, updateUserDetails, bids, bidOpportunities, showMessageBox, appId: MY_APP_ID_FOR_FIRESTORE_PATHS }}>
+            {renderPage()}
+            <MessageBox message={message} onClose={closeMessageBox} />
         </AppContext.Provider>
     );
 }
