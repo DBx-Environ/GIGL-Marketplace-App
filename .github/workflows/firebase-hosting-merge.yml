@@ -1,71 +1,71 @@
-    # This file defines a GitHub Actions workflow for deploying your React app
-    # to Firebase Hosting when changes are merged into the 'main' branch.
+# This file defines a GitHub Actions workflow for deploying your React app
+# to Firebase Hosting when changes are merged into the 'main' branch.
 
-    name: Deploy to Firebase Hosting on merge
+name: Deploy to Firebase Hosting on merge
 
-    on:
-      push:
-        branches:
-          - main # This workflow triggers on pushes to the 'main' branch.
+on:
+  push:
+    branches:
+      - main # This workflow triggers on pushes to the 'main' branch.
 
-    jobs:
-      build_and_deploy:
-        runs-on: ubuntu-latest # Specifies the operating system for the job.
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest # Specifies the operating system for the job.
 
-        env: # This env block must be present and complete
-          REACT_APP_FIREBASE_API_KEY: ${{ secrets.REACT_APP_FIREBASE_API_KEY }}
-          REACT_APP_FIREBASE_AUTH_DOMAIN: ${{ secrets.REACT_APP_FIREBASE_AUTH_DOMAIN }}
-          REACT_APP_FIREBASE_PROJECT_ID: ${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}
-          REACT_APP_FIREBASE_STORAGE_BUCKET: ${{ secrets.REACT_APP_FIREBASE_STORAGE_BUCKET }}
-          REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}
-          REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
-          REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS: ${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }}
-          REACT_APP_CONTACT_EMAIL: ${{ secrets.REACT_APP_CONTACT_EMAIL }}
-          CI: true # Explicitly set CI to true to ensure warnings are treated as errors
+    env: # This env block must be present and complete
+      REACT_APP_FIREBASE_API_KEY: ${{ secrets.REACT_APP_FIREBASE_API_KEY }}
+      REACT_APP_FIREBASE_AUTH_DOMAIN: ${{ secrets.REACT_APP_FIREBASE_AUTH_DOMAIN }}
+      REACT_APP_FIREBASE_PROJECT_ID: ${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}
+      REACT_APP_FIREBASE_STORAGE_BUCKET: ${{ secrets.REACT_APP_FIREBASE_STORAGE_BUCKET }}
+      REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}
+      REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
+      REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS: ${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }}
+      REACT_APP_CONTACT_EMAIL: ${{ secrets.REACT_APP_CONTACT_EMAIL }}
+      CI: true # Explicitly set CI to true to ensure warnings are treated as errors
 
-        steps:
-          - name: Checkout code
-            uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-          - name: Set up Node.js
-            uses: actions/setup-node@v4
-            with:
-              node-version: '20'
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-          - name: Install dependencies
-            run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-          - name: Build React app
-            run: npm run build
+      - name: Build React app
+        run: npm run build
 
-          # --- Cloud Functions Deployment Steps (ADD THESE) ---
-          - name: Install gcloud CLI
-            run: |
-              sudo apt-get update
-              sudo apt-get install google-cloud-cli
+      # --- Cloud Functions Deployment Steps ---
+      - name: Install gcloud CLI
+        run: |
+          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+          sudo apt-get update
+          sudo apt-get install google-cloud-cli -y # Added -y for non-interactive install
 
-          - name: Authenticate gcloud CLI
-            uses: google-github-actions/auth@v2
-            with:
-              credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GIGL_MARKETPLACE_APP }} # Use the service account JSON key secret
+      - name: Authenticate gcloud CLI
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }} # Use the service account JSON key secret
 
-          - name: Deploy Cloud Function
-            run: |
-              gcloud functions deploy sendBidNotificationEmail \
-                --runtime nodejs20 \
-                --trigger-event providers/cloud.firestore/eventTypes/document.write \
-                --trigger-resource "projects/${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}/databases/(default)/documents/artifacts/${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }}/public/data/bids/{bidId}" \
-                --entry-point sendBidNotificationEmail \
-                --region europe-west2 \
-                --source functions \
-                --allow-unauthenticated # Consider removing for production if not strictly needed
+      - name: Deploy Cloud Function
+        run: |
+          gcloud functions deploy sendBidNotificationEmail \
+            --runtime nodejs20 \
+            --trigger-event providers/cloud.firestore/eventTypes/document.write \
+            --trigger-resource "projects/${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}/databases/(default)/documents/artifacts/${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }}/public/data/bids/{bidId}" \
+            --entry-point sendBidNotificationEmail \
+            --region europe-west2 \
+            --source functions \
+            --allow-unauthenticated # Consider removing for production if not strictly needed
 
-          # --- Firebase Hosting Deployment Step (EXISTING) ---
-          - name: Deploy to Firebase Hosting
-            uses: FirebaseExtended/action-hosting-deploy@v0
-            with:
-              repoToken: '${{ secrets.GITHUB_TOKEN }}'
-              firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_GIGL_MARKETPLACE_APP }}' # Replace with your actual secret name
-              channelId: live
-              projectId: ${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }} # Use project ID from secrets
-    
+      # --- Firebase Hosting Deployment Step ---
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_GIGLMARKETPLACEAPP_25686 }}' # Replace with your actual secret name
+          channelId: live
+          projectId: ${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }} # Use project ID from secrets
