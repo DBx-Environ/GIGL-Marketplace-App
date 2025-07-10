@@ -784,10 +784,10 @@ export default function App() {
                 <footer className="w-full max-w-2xl text-center text-gray-600 text-sm mt-8 p-4">
                     <p className="mb-2">&copy; {new Date().getFullYear()} GIGL Limited. All rights reserved.</p>
                     <div className="flex justify-center space-x-4">
-                        {/* Corrected: Using role="button" and tabIndex="0" for non-navigational links */}
-                        <a href={null} role="button" tabIndex="0" onClick={(e) => { e.preventDefault(); showMessageBox("Terms and Conditions link clicked. Replace 'href={null}' with your actual URL."); }} className="text-blue-600 hover:underline">Terms and Conditions</a>
+                        {/* Corrected: Using <button> tags for non-navigational actions to satisfy a11y rules */}
+                        <button type="button" onClick={() => showMessageBox("Terms and Conditions link clicked. Replace this action with navigation to your actual URL.")} className="text-blue-600 hover:underline px-2 py-1 rounded-md">Terms and Conditions</button>
                         <span className="text-gray-400">|</span>
-                        <a href={null} role="button" tabIndex="0" onClick={(e) => { e.preventDefault(); showMessageBox("Privacy Policy link clicked. Replace 'href={null}' with your actual URL."); }} className="text-blue-600 hover:underline">Privacy Policy</a>
+                        <button type="button" onClick={() => showMessageBox("Privacy Policy link clicked. Replace this action with navigation to your actual URL.")} className="text-blue-600 hover:underline px-2 py-1 rounded-md">Privacy Policy</button>
                         <span className="text-gray-400">|</span>
                         <a href="mailto:david@baxterenvironmental.co.uk" className="text-blue-600 hover:underline">Email</a>
                     </div>
