@@ -784,9 +784,9 @@ export default function App() {
                     <p className="mb-2">&copy; {new Date().getFullYear()} GIGL Limited. All rights reserved.</p>
                     <div className="flex justify-center space-x-4">
                         {/* Use '#' with preventDefault for links that trigger actions without navigation */}
-                        <a href="#" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Terms and Conditions</a>
+                        <a href="#" onClick={(e) => { e.preventDefault(); showMessageBox("Terms and Conditions link clicked. Replace '#' with your actual URL."); }} className="text-blue-600 hover:underline">Terms and Conditions</a>
                         <span className="text-gray-400">|</span>
-                        <a href="#" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Privacy Policy</a>
+                        <a href="#" onClick={(e) => { e.preventDefault(); showMessageBox("Privacy Policy link clicked. Replace '#' with your actual URL."); }} className="text-blue-600 hover:underline">Privacy Policy</a>
                         <span className="text-gray-400">|</span>
                         <a href="mailto:info@gigl.com" className="text-blue-600 hover:underline">Email</a>
                     </div>
