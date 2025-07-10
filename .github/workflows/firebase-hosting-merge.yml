@@ -42,7 +42,7 @@
           - name: Install gcloud CLI
             run: |
               sudo apt-get update
-              sudo apt-get install google-cloud-sdk
+              sudo apt-get install google-cloud-cli
 
           - name: Authenticate gcloud CLI
             uses: google-github-actions/auth@v2
