@@ -57,7 +57,7 @@
           - name: Authenticate gcloud CLI
             uses: google-github-actions/auth@v2
             with:
-              credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GIGL_MARKETPLACE_APP }}
+              credentials_json: ${{ secrets.FIREBASE_FUNCTIONS_DEPLOY_KEY }}
 
           - name: Deploy Cloud Function
             run: |
