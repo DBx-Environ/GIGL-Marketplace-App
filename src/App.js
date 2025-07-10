@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, onAuthStateChanged, signOut, updateProfile } from 'firebase/auth'; // Removed signInAnonymously
-import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, serverTimestamp, addDoc, updateDoc, deleteDoc } from 'firebase/firestore'; // Removed query, where, orderBy
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, onAuthStateChanged, signOut, updateProfile } from 'firebase/auth';
+import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, serverTimestamp, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 // --- Context for User and Firebase Instances ---
 const AppContext = createContext();
@@ -113,7 +113,7 @@ const WelcomePage = ({ navigate }) => {
     return (
         <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl flex flex-col items-center mb-8">
             <div className="mb-6">
-                <img src="/gigl-logo.png" alt="GIGL Marketplace Logo" className="h-16 w-auto mx-auto rounded-md" />
+                <img src="/GIGL_Logo.png" alt="GIGL Marketplace Logo" className="h-16 w-auto mx-auto rounded-md" />
             </div>
             <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">Welcome to the GIGL Marketplace</h1>
 
@@ -592,7 +592,7 @@ const AdminPage = ({ navigate }) => {
 // --- Firebase Configuration (Defined outside component for stability) ---
 // You can find these values in your Firebase project settings in the Firebase Console.
 const YOUR_FIREBASE_CONFIG = {
-    apiKey: "AIzaSyBkPB9gTbZeU59EDw2qSJx0SkqaBcgqLmA",
+  apiKey: "AIzaSyBkPB9gTbZeU59EDw2qSJx0SkqaBcgqLmA",
   authDomain: "gigl-marketplace-app.firebaseapp.com",
   projectId: "gigl-marketplace-app",
   storageBucket: "gigl-marketplace-app.firebasestorage.app",
@@ -603,7 +603,7 @@ const YOUR_FIREBASE_CONFIG = {
 
 // Use a fixed string for appId for Firestore paths in your deployed app.
 // This can be your projectId or any other descriptive string.
-const MY_APP_ID_FOR_FIRESTORE_PATHS = "gigl-marketplace-app"; // Example: use your project ID or a custom string
+const MY_APP_ID_FOR_FIRESTORE_PATHS = "gigl-marketplace"; // Example: use your project ID or a custom string
 
 
 // --- Main App Component ---
@@ -696,10 +696,16 @@ export default function App() {
     useEffect(() => {
         if (!firestoreDb || !isAuthReady) return;
 
+        // Corrected query for bidOpportunities: orderBy requires an index if not on a single field
+        // For simplicity and to avoid index issues, we'll sort in memory if orderBy is not strict.
+        // If you need server-side ordering, create an index in Firestore console.
+        const opportunitiesQuery = collection(firestoreDb, `artifacts/${MY_APP_ID_FOR_FIRESTORE_PATHS}/public/data/bidOpportunities`);
         const unsubscribeOpportunities = onSnapshot(
-            collection(firestoreDb, `artifacts/${MY_APP_ID_FOR_FIRESTORE_PATHS}/public/data/bidOpportunities`),
+            opportunitiesQuery,
             (snapshot) => {
                 const opportunitiesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                // Client-side sort if needed and no Firestore index is present for orderBy
+                opportunitiesData.sort((a, b) => (a.createdAt?.toDate() || 0) - (b.createdAt?.toDate() || 0));
                 setBidOpportunities(opportunitiesData);
             },
             (error) => {
@@ -708,8 +714,9 @@ export default function App() {
             }
         );
 
+        const bidsQuery = collection(firestoreDb, `artifacts/${MY_APP_ID_FOR_FIRESTORE_PATHS}/public/data/bids`);
         const unsubscribeBids = onSnapshot(
-            collection(firestoreDb, `artifacts/${MY_APP_ID_FOR_FIRESTORE_PATHS}/public/data/bids`),
+            bidsQuery,
             (snapshot) => {
                 const bidsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 setBids(bidsData);
@@ -773,11 +780,11 @@ export default function App() {
                     <p className="mb-2">&copy; {new Date().getFullYear()} GIGL Limited. All rights reserved.</p>
                     <div className="flex justify-center space-x-4">
                         {/* Replace '#' with actual URLs for Terms and Conditions and Privacy Policy */}
-                        <a href="javascript:void(0);" className="text-blue-600 hover:underline">Terms and Conditions</a>
+                        <a href="#" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Terms and Conditions</a>
                         <span className="text-gray-400">|</span>
-                        <a href="javascript:void(0);" className="text-blue-600 hover:underline">Privacy Policy</a>
+                        <a href="#" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Privacy Policy</a>
                         <span className="text-gray-400">|</span>
-                        <a href="mailto:david@baxterenvironmental.co.uk" className="text-blue-600 hover:underline">Email</a>
+                        <a href="mailto:info@gigl.com" className="text-blue-600 hover:underline">Email</a>
                     </div>
                 </footer>
             </div>
