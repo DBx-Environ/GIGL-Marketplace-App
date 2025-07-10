@@ -361,7 +361,7 @@ const ExistingBidsPage = ({ navigate }) => {
                 const oppRef = doc(db, `artifacts/${appId}/public/data/bidOpportunities`, opportunityId);
                 await updateDoc(oppRef, { currentHighestBid: newBidAmount, highestBidderId: currentUser.uid });
             }
-
+            console.log(`Bid updated for ${opportunity.title} by ${currentUser.email}. Email notification to be sent by backend.`); // Email trigger acknowledgment
             showMessageBox("Bid updated successfully!");
         } catch (error) {
             console.error("Error updating bid:", error);
@@ -383,6 +383,7 @@ const ExistingBidsPage = ({ navigate }) => {
             const bidRef = doc(db, `artifacts/${appId}/public/data/bids`, bidId);
             await deleteDoc(bidRef);
 
+            console.log(`Bid withdrawn for ${opportunity.title} by ${currentUser.email}. Email notification to be sent by backend.`); // Email trigger acknowledgment
             showMessageBox("Bid withdrawn successfully!");
         } catch (error) {
             console.error("Error withdrawing bid:", error);
@@ -481,7 +482,7 @@ const BidOpportunitiesPage = ({ navigate }) => {
                 currentHighestBid: bidAmount,
                 highestBidderId: currentUser.uid
             });
-
+            console.log(`Bid placed for ${opportunity.title} by ${currentUser.email}. Email notification to be sent by backend.`); // Email trigger acknowledgment
             showMessageBox("Bid placed successfully!");
         } catch (error) {
             console.error("Error placing bid:", error);
