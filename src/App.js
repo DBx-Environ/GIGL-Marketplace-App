@@ -66,7 +66,7 @@ const WelcomePage = ({ navigate }) => {
             // After registration, sign out the user so they MUST verify email before logging in
             await auth.signOut();
 
-            // Create a user document in Firestore
+            // Create a user document in Firestore minor addition for Push test
             await setDoc(doc(db, `artifacts/${appId}/users/${user.uid}`), {
                 email: user.email,
                 name: '', // Placeholder for user's name
