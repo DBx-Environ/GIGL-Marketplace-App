@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, onAuthStateChanged, signOut, updateProfile, sendPasswordResetEmail } from 'firebase/auth'; // Added sendPasswordResetEmail
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, onAuthStateChanged, signOut, updateProfile, sendPasswordResetEmail } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, serverTimestamp, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 // --- Context for User and Firebase Instances ---
@@ -798,7 +798,7 @@ export default function App() {
                 {/* Global Header with Logo */}
                 <header className="w-full max-w-4xl bg-white p-4 rounded-xl shadow-lg mb-8 flex items-center justify-center">
                     {/* Ensure your logo file is in the public/ folder and the name matches exactly */}
-                    <img src="/GIGL_Logo.png" alt="GIGL Marketplace Logo" className="h-20 w-auto max-w-full rounded-md" /> {/* Larger and responsive */}
+                    <img src="/GIGL_Logo.png" alt="GIGL Marketplace Logo" className="h-32 w-auto max-w-full rounded-md" /> {/* Larger and responsive */}
                 </header>
 
                 {/* Main Content Area */}
@@ -825,6 +825,7 @@ export default function App() {
                 <footer className="w-full max-w-2xl text-center text-gray-600 text-sm mt-8 p-4">
                     <p className="mb-2">&copy; {new Date().getFullYear()} GIGL Limited. All rights reserved.</p>
                     <div className="flex justify-center space-x-4">
+                        {/* Corrected: Using <button> tags for non-navigational actions to satisfy a11y rules */}
                         <button type="button" onClick={() => showMessageBox("Terms and Conditions link clicked. Replace this action with navigation to your actual URL.")} className="text-blue-600 hover:underline px-2 py-1 rounded-md">Terms and Conditions</button>
                         <span className="text-gray-400">|</span>
                         <button type="button" onClick={() => showMessageBox("Privacy Policy link clicked. Replace this action with navigation to your actual URL.")} className="text-blue-600 hover:underline px-2 py-1 rounded-md">Privacy Policy</button>
