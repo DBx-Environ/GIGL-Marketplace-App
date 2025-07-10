@@ -117,7 +117,8 @@ const WelcomePage = ({ navigate }) => {
     return (
         <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl flex flex-col items-center mb-8">
             <div className="mb-6">
-                <img src="/gigl-logo.png" alt="GIGL Marketplace Logo" className="h-16 w-auto mx-auto rounded-md" />
+                {/* Ensure your logo file is in the public/ folder and the name matches exactly */}
+                <img src="/GIGL_Logo.png" alt="GIGL Marketplace Logo" className="h-16 w-auto mx-auto rounded-md" />
             </div>
             <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">Welcome to the GIGL Marketplace</h1>
 
@@ -594,20 +595,28 @@ const AdminPage = ({ navigate }) => {
 
 
 // --- Firebase Configuration (Defined outside component for stability) ---
-// You can find these values in your Firebase project settings in the Firebase Console.
+// These values will be read from environment variables.
+// You MUST create a .env file in your project root with these variables.
+// Example .env content:
+// REACT_APP_FIREBASE_API_KEY="AIzaSyC..."
+// REACT_APP_FIREBASE_AUTH_DOMAIN="your-project-id.firebaseapp.com"
+// REACT_APP_FIREBASE_PROJECT_ID="your-project-id"
+// REACT_APP_FIREBASE_STORAGE_BUCKET="your-project-id.appspot.com"
+// REACT_APP_FIREBASE_MESSAGING_SENDER_ID="1234567890"
+// REACT_APP_FIREBASE_APP_ID="1:1234567890:web:abcdef1234567890abcdef"
+// REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS="gigl-marketplace"
+
 const YOUR_FIREBASE_CONFIG = {
-  apiKey: "YOUR_API_KEY", // e.g., "AIzaSyC..."
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com", // e.g., "my-gigl-app.firebaseapp.com"
-  projectId: "YOUR_PROJECT_ID", // e.g., "my-gigl-app"
-  storageBucket: "your-project-id.appspot.com", // e.g., "my-gigl-app.appspot.com"
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // e.g., "1234567890"
-  appId: "YOUR_APP_ID", // e.g., "1:1234567890:web:abcdef1234567890abcdef"
-  // measurementId: "G-XXXXXXXXXX" // Optional: if you use Google Analytics
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  // measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID // Uncomment if you use Analytics
 };
 
-// Use a fixed string for appId for Firestore paths in your deployed app.
-// This can be your projectId or any other descriptive string.
-const MY_APP_ID_FOR_FIRESTORE_PATHS = "gigl-marketplace"; // Example: use your project ID or a custom string
+const MY_APP_ID_FOR_FIRESTORE_PATHS = process.env.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS || "gigl-marketplace";
 
 
 // --- Main App Component ---
@@ -639,8 +648,9 @@ export default function App() {
 
     // Firebase Initialization and Auth State Listener
     useEffect(() => {
+        // Check if essential config values are present
         if (!YOUR_FIREBASE_CONFIG.apiKey || !YOUR_FIREBASE_CONFIG.projectId) {
-            showMessageBox("Firebase configuration is incomplete. Please update YOUR_FIREBASE_CONFIG in App.js.");
+            showMessageBox("Firebase configuration is incomplete. Please ensure all REACT_APP_FIREBASE_... variables are set in your .env file.");
             console.error("Firebase configuration is missing or incomplete.");
             setIsAuthReady(true);
             return;
@@ -679,15 +689,6 @@ export default function App() {
                 }
                 setIsAuthReady(true);
             });
-
-            // For deployed apps, anonymous sign-in on initial load is usually not needed
-            // if users are expected to register/login.
-            // If you want anonymous access for unauthenticated users, uncomment this:
-            /*
-            if (!authInstance.currentUser) {
-                authInstance.signInAnonymously().catch(anonError => console.error("Error signing in anonymously:", anonError));
-            }
-            */
 
             return () => unsubscribeAuth();
         } catch (error) {
@@ -783,10 +784,10 @@ export default function App() {
                 <footer className="w-full max-w-2xl text-center text-gray-600 text-sm mt-8 p-4">
                     <p className="mb-2">&copy; {new Date().getFullYear()} GIGL Limited. All rights reserved.</p>
                     <div className="flex justify-center space-x-4">
-                        {/* Use '#' with preventDefault for links that trigger actions without navigation */}
-                        <a href="#" onClick={(e) => { e.preventDefault(); showMessageBox("Terms and Conditions link clicked. Replace '#' with your actual URL."); }} className="text-blue-600 hover:underline">Terms and Conditions</a>
+                        {/* Corrected: Using role="button" and tabIndex="0" for non-navigational links */}
+                        <a href={null} role="button" tabIndex="0" onClick={(e) => { e.preventDefault(); showMessageBox("Terms and Conditions link clicked. Replace 'href={null}' with your actual URL."); }} className="text-blue-600 hover:underline">Terms and Conditions</a>
                         <span className="text-gray-400">|</span>
-                        <a href="#" onClick={(e) => { e.preventDefault(); showMessageBox("Privacy Policy link clicked. Replace '#' with your actual URL."); }} className="text-blue-600 hover:underline">Privacy Policy</a>
+                        <a href={null} role="button" tabIndex="0" onClick={(e) => { e.preventDefault(); showMessageBox("Privacy Policy link clicked. Replace 'href={null}' with your actual URL."); }} className="text-blue-600 hover:underline">Privacy Policy</a>
                         <span className="text-gray-400">|</span>
                         <a href="mailto:info@gigl.com" className="text-blue-600 hover:underline">Email</a>
                     </div>
