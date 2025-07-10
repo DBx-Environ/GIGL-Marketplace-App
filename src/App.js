@@ -67,7 +67,11 @@ const WelcomePage = ({ navigate }) => {
                 errorMessage = "This email is already in use. Please try logging in or use a different email.";
             } else if (error.code === 'auth/invalid-email') {
                 errorMessage = "Invalid email address format.";
-            } else {
+                // Specific Firebase Auth error code for weak password
+            } else if (error.code === 'auth/weak-password') {
+                errorMessage = "Password is too weak. Please choose a stronger password.";
+            }
+            else {
                 errorMessage = `Registration failed: ${error.message}`;
             }
             showMessageBox(errorMessage);
@@ -113,7 +117,7 @@ const WelcomePage = ({ navigate }) => {
     return (
         <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl flex flex-col items-center mb-8">
             <div className="mb-6">
-                <img src="/GIGL_Logo.png" alt="GIGL Marketplace Logo" className="h-16 w-auto mx-auto rounded-md" />
+                <img src="/gigl-logo.png" alt="GIGL Marketplace Logo" className="h-16 w-auto mx-auto rounded-md" />
             </div>
             <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">Welcome to the GIGL Marketplace</h1>
 
@@ -592,13 +596,13 @@ const AdminPage = ({ navigate }) => {
 // --- Firebase Configuration (Defined outside component for stability) ---
 // You can find these values in your Firebase project settings in the Firebase Console.
 const YOUR_FIREBASE_CONFIG = {
-  apiKey: "AIzaSyBkPB9gTbZeU59EDw2qSJx0SkqaBcgqLmA",
-  authDomain: "gigl-marketplace-app.firebaseapp.com",
-  projectId: "gigl-marketplace-app",
-  storageBucket: "gigl-marketplace-app.firebasestorage.app",
-  messagingSenderId: "221296619626",
-  appId: "1:221296619626:web:92e170311ca9a9e8565a13",
-  measurementId: "G-HWZKEXY5S4"
+  apiKey: "YOUR_API_KEY", // e.g., "AIzaSyC..."
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com", // e.g., "my-gigl-app.firebaseapp.com"
+  projectId: "YOUR_PROJECT_ID", // e.g., "my-gigl-app"
+  storageBucket: "your-project-id.appspot.com", // e.g., "my-gigl-app.appspot.com"
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // e.g., "1234567890"
+  appId: "YOUR_APP_ID", // e.g., "1:1234567890:web:abcdef1234567890abcdef"
+  // measurementId: "G-XXXXXXXXXX" // Optional: if you use Google Analytics
 };
 
 // Use a fixed string for appId for Firestore paths in your deployed app.
@@ -731,7 +735,7 @@ export default function App() {
             unsubscribeOpportunities();
             unsubscribeBids();
         };
-    }, [firestoreDb, MY_APP_ID_FOR_FIRESTORE_PATHS, isAuthReady]);
+    }, [firestoreDb, isAuthReady]); // Removed MY_APP_ID_FOR_FIRESTORE_PATHS from dependency array
 
     const updateUserDetails = async (uid, data) => {
         if (!firestoreDb) return;
@@ -779,7 +783,7 @@ export default function App() {
                 <footer className="w-full max-w-2xl text-center text-gray-600 text-sm mt-8 p-4">
                     <p className="mb-2">&copy; {new Date().getFullYear()} GIGL Limited. All rights reserved.</p>
                     <div className="flex justify-center space-x-4">
-                        {/* Replace '#' with actual URLs for Terms and Conditions and Privacy Policy */}
+                        {/* Use '#' with preventDefault for links that trigger actions without navigation */}
                         <a href="#" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Terms and Conditions</a>
                         <span className="text-gray-400">|</span>
                         <a href="#" onClick={(e) => e.preventDefault()} className="text-blue-600 hover:underline">Privacy Policy</a>
