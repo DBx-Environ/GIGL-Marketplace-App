@@ -16,6 +16,11 @@ const resendApiKey = process.env.RESEND_API_KEY;
 const contactEmail = process.env.CONTACT_EMAIL;
 const senderEmail = process.env.SENDER_EMAIL;
 
+// Use the APP_ID from environment variables for Firestore paths
+// This matches REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS from the frontend
+const APP_ID_FOR_FIRESTORE = process.env.MY_APP_ID_FOR_FIRESTORE_PATHS;
+
+
 /**
  * Helper function to send email via Resend API.
  * @param {string} fromEmail - The sender's email address
@@ -69,14 +74,14 @@ async function sendEmailResend(fromEmail, toEmail, subject, htmlContent) {
  * Sends email notifications for bid actions.
  * @param {object} event - The CloudEvent from the Firestore trigger.
  */
-exports.sendBidNotificationEmail = onDocumentWritten( // <--- Corrected 2nd Gen trigger import
+exports.sendBidNotificationEmail = onDocumentWritten(
   {
-    document: "artifacts/{appId}/public/data/bids/{bidId}",
-    region: "europe-west2", // <--- Region specified here
+    document: `artifacts/${APP_ID_FOR_FIRESTORE}/public/data/bids/{bidId}`, // <--- Uses APP_ID_FOR_FIRESTORE
+    region: "europe-west2",
   },
-  async (event) => { // Event object for 2nd Gen
+  async (event) => {
     const bidId = event.params.bidId;
-    const appId = event.params.appId; // Get appId from the path
+    // const appId = event.params.appId; // Removed - now using APP_ID_FOR_FIRESTORE
 
     const oldBid = event.data.before.exists ? event.data.before.data() : null;
     const newBid = event.data.after.exists ? event.data.after.data() : null;
@@ -110,7 +115,7 @@ exports.sendBidNotificationEmail = onDocumentWritten( // <--- Corrected 2nd Gen 
       opportunityTitle = newBid.opportunityTitle;
       bidAmount = newBid.bidAmount;
       // Fetch bidder's email from the 'users' collection
-      const bidderDoc = await db.collection(`artifacts/${appId}/users`)
+      const bidderDoc = await db.collection(`artifacts/${APP_ID_FOR_FIRESTORE}/users`) // <--- Uses APP_ID_FOR_FIRESTORE
           .doc(newBid.bidderId).get();
       bidderEmail = bidderDoc.exists ?
         bidderDoc.data().email :
@@ -131,7 +136,7 @@ exports.sendBidNotificationEmail = onDocumentWritten( // <--- Corrected 2nd Gen 
       bidAmount = newBid.bidAmount;
       const oldBidAmount = oldBid.bidAmount;
       // Fetch bidder's email from the 'users' collection
-      const bidderDoc = await db.collection(`artifacts/${appId}/users`)
+      const bidderDoc = await db.collection(`artifacts/${APP_ID_FOR_FIRESTORE}/users`) // <--- Uses APP_ID_FOR_FIRESTORE
           .doc(newBid.bidderId).get();
       bidderEmail = bidderDoc.exists ?
         bidderDoc.data().email :
