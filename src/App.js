@@ -3,11 +3,11 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, onAuthStateChanged, signOut, updateProfile, sendPasswordResetEmail } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, serverTimestamp, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
-// --- Context for User and Firebase Instances Hello! NewKeys and New gen1 Flag ---
+// --- Context for User and Firebase Instances Hello! NewKeys and New gen1 Flaggit acp ---
 const AppContext = createContext();
 
 // Custom Message Box Component
-const MessageBox = ({ message, onClose }) => {
+const MessageBox = ({ message, onClose }) => {git add 
     if (!message) return null;
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
@@ -38,7 +38,7 @@ const WelcomePage = ({ navigate }) => {
     // Function to validate password policy
     const validatePassword = (password) => {
         if (password.length < 8) {
-            return "Password must be at least 8 characters long.";
+            return "Password must be minimum of 8 characters long.";
         }
         if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
             return "Password must contain at least one special symbol.";
