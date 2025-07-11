@@ -38,12 +38,7 @@
           - name: Build React app
             run: npm run build
 
-          # --- Cloud Functions Deployment Steps (No Test Step) ---
-          # - name: Run Cloud Functions tests (example) # <--- THIS STEP IS REMOVED/COMMENTED OUT
-          #   run: |
-          #     cd functions
-          #     npm test
-
+          # --- Cloud Functions Deployment Steps ---
           - name: Add Google Cloud GPG key
             run: |
               curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
@@ -54,10 +49,10 @@
               sudo apt-get update
               sudo apt-get install google-cloud-cli -y
 
-          - name: Authenticate gcloud CLI
+          - name: Authenticate gcloud CLI (for Functions)
             uses: google-github-actions/auth@v2
             with:
-              credentials_json: ${{ secrets.FIREBASE_FUNCTIONS_DEPLOY_KEY }}
+              credentials_json: ${{ secrets.FIREBASE_FUNCTIONS_DEPLOY_KEY }} # Uses the new, dedicated key for functions
 
           - name: Deploy Cloud Function
             run: |
@@ -68,6 +63,7 @@
                 --entry-point sendBidNotificationEmail \
                 --region europe-west2 \
                 --source functions \
+                --gen1 \ # <--- ADD THIS FLAG TO FORCE 1ST GEN DEPLOYMENT
                 --allow-unauthenticated # Consider removing for production if not strictly needed
 
           # --- Firebase Hosting Deployment Step ---
