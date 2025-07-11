@@ -22,6 +22,7 @@
           REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS: ${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }}
           REACT_APP_CONTACT_EMAIL: ${{ secrets.REACT_APP_CONTACT_EMAIL }}
           CI: true # Explicitly set CI to true to ensure warnings are treated as errors
+          ACTIONS_STEP_DEBUG: true # <--- ADD THIS LINE FOR DEBUGGING
 
         steps:
           - name: Checkout code
@@ -39,16 +40,15 @@
             run: npm run build
 
           # --- Cloud Functions Deployment Steps ---
-          # Removed gcloud CLI installation and authentication steps
           - name: Authenticate Firebase CLI (for Functions)
             uses: google-github-actions/auth@v2
             with:
-              credentials_json: ${{ secrets.FIREBASE_FUNCTIONS_DEPLOY_KEY }} # Use the dedicated functions deploy key
+              credentials_json: ${{ secrets.FIREBASE_FUNCTIONS_DEPLOY_KEY }}
 
           - name: Deploy Cloud Function (via Firebase CLI)
             run: |
               npm install -g firebase-tools # Ensure firebase-tools is available
-              firebase deploy --only functions --token "${{ secrets.FIREBASE_FUNCTIONS_DEPLOY_KEY }}" # Pass token directly
+              firebase deploy --only functions --token "${{ secrets.FIREBASE_FUNCTIONS_DEPLOY_KEY }}"
 
           # --- Firebase Hosting Deployment Step ---
           - name: Deploy to Firebase Hosting
