@@ -58,15 +58,15 @@
             run: |
               gcloud functions deploy sendBidNotificationEmail \
                 --runtime nodejs20 \
-                --gen2 \ # Explicitly deploying as 2nd Gen
-                --trigger-event-filters="type=google.cloud.firestore.document.v1.written" \ # <--- CORRECTED 2nd Gen Event Type
+                --gen2 \
+                --trigger-event-filters="type=google.cloud.firestore.document.v1.written" \
                 --trigger-event-filters="database=(default)" \ # Often needed for Firestore triggers
                 --trigger-event-filters="namespace=(default)" \ # Often needed for Firestore triggers
-                --trigger-event-filters="document=artifacts/${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }}/public/data/bids/{bidId}" \ # <--- Corrected Document Path
+                --trigger-event-filters="document=artifacts/${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }}/public/data/bids/{bidId}" \
                 --entry-point sendBidNotificationEmail \
                 --region europe-west2 \
                 --source functions \
-                --allow-unauthenticated # Consider removing for production if not strictly needed
+                --allow-unauthenticated
 
           # --- Firebase Hosting Deployment Step ---
           - name: Deploy to Firebase Hosting
