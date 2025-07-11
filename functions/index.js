@@ -1,4 +1,6 @@
-const functions = require("firebase-functions");
+// Import 2nd Gen functions specifically
+const { onDocumentWritten } = require("firebase-functions/v2/firestore");
+const { region } = require("firebase-functions/v2/options"); // For setting region with 2nd Gen
 const admin = require("firebase-admin");
 
 // Initialize Firebase Admin SDK (required for interacting with Firestore)
@@ -10,9 +12,9 @@ const db = admin.firestore();
 // --- Configure Resend API Key ---
 // IMPORTANT: These are now read directly from process.env for 2nd Gen Functions.
 // You will set these in the GitHub Actions workflow directly.
-const resendApiKey = process.env.RESEND_API_KEY; // Read from process.env
-const contactEmail = process.env.CONTACT_EMAIL; // Read from process.env
-const senderEmail = process.env.SENDER_EMAIL;   // Read from process.env
+const resendApiKey = process.env.RESEND_API_KEY;
+const contactEmail = process.env.CONTACT_EMAIL;
+const senderEmail = process.env.SENDER_EMAIL;
 
 /**
  * Helper function to send email via Resend API.
@@ -67,10 +69,12 @@ async function sendEmailResend(fromEmail, toEmail, subject, htmlContent) {
  * Sends email notifications for bid actions.
  * @param {object} event - The CloudEvent from the Firestore trigger.
  */
-exports.sendBidNotificationEmail = functions.firestore
-  .onDocumentWritten("artifacts/{appId}/public/data/bids/{bidId}") // 2nd Gen Trigger
-  .region("europe-west2") // Region specified here
-  .onWrite(async (event) => { // Event object for 2nd Gen
+exports.sendBidNotificationEmail = onDocumentWritten( // <--- Corrected 2nd Gen trigger import
+  {
+    document: "artifacts/{appId}/public/data/bids/{bidId}",
+    region: "europe-west2", // <--- Region specified here
+  },
+  async (event) => { // Event object for 2nd Gen
     const bidId = event.params.bidId;
     const appId = event.params.appId; // Get appId from the path
 
