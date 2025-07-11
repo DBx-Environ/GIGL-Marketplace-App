@@ -63,7 +63,7 @@
                 --entry-point sendBidNotificationEmail \
                 --region europe-west2 \
                 --source functions \
-                --gen1 \
+                --gen2 \
                 --allow-unauthenticated # Consider removing for production if not strictly needed
 
           # --- Firebase Hosting Deployment Step ---
