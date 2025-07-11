@@ -52,18 +52,20 @@
           - name: Authenticate gcloud CLI (for Functions)
             uses: google-github-actions/auth@v2
             with:
-              credentials_json: ${{ secrets.FIREBASE_FUNCTIONS_DEPLOY_KEY }} # Uses the new, dedicated key for functions
+              credentials_json: ${{ secrets.FIREBASE_FUNCTIONS_DEPLOY_KEY }}
 
           - name: Deploy Cloud Function
             run: |
               gcloud functions deploy sendBidNotificationEmail \
                 --runtime nodejs20 \
-                --trigger-event-filters providers/cloud.firestore/eventTypes/document.write \
-                --trigger-resource "projects/${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}/databases/(default)/documents/artifacts/${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }}/public/data/bids/{bidId}" \
+                --gen2 \ # Explicitly deploying as 2nd Gen
+                --trigger-event-filters="type=google.cloud.firestore.document.v1.written" \ # <--- CORRECTED 2nd Gen Event Type
+                --trigger-event-filters="database=(default)" \ # Often needed for Firestore triggers
+                --trigger-event-filters="namespace=(default)" \ # Often needed for Firestore triggers
+                --trigger-event-filters="document=artifacts/${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }}/public/data/bids/{bidId}" \ # <--- Corrected Document Path
                 --entry-point sendBidNotificationEmail \
                 --region europe-west2 \
                 --source functions \
-                --gen2 \
                 --allow-unauthenticated # Consider removing for production if not strictly needed
 
           # --- Firebase Hosting Deployment Step ---
