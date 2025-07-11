@@ -58,12 +58,14 @@ jobs:
         run: |
           gcloud functions deploy sendBidNotificationEmail \
             --runtime nodejs20 \
-            --trigger-event providers/cloud.firestore/eventTypes/document.write \
-            --trigger-resource "projects/${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}/databases/(default)/documents/artifacts/${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }}/public/data/bids/{bidId}" \
+            --gen2 \
+            --trigger-event-filters="type=google.cloud.firestore.document.v1.written" \
+            --trigger-event-filters="database=(default)" \
+            --trigger-event-filters="namespace=(default)" \
+            --trigger-event-filters="document=artifacts/${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }}/public/data/bids/{bidId}" \
             --entry-point sendBidNotificationEmail \
             --region europe-west2 \
             --source functions \
-            --gen1 \
             --allow-unauthenticated
 
       # --- Firebase Hosting Deployment Step ---
