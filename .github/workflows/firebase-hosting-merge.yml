@@ -58,7 +58,7 @@
             run: |
               gcloud functions deploy sendBidNotificationEmail \
                 --runtime nodejs20 \
-                --trigger-event providers/cloud.firestore/eventTypes/document.write \
+                --trigger-event-filters providers/cloud.firestore/eventTypes/document.write \
                 --trigger-resource "projects/${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}/databases/(default)/documents/artifacts/${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }}/public/data/bids/{bidId}" \
                 --entry-point sendBidNotificationEmail \
                 --region europe-west2 \
