@@ -41,6 +41,7 @@
 
           # --- Cloud Functions Deployment Steps ---
           - name: Authenticate Firebase CLI (for Functions)
+            id: auth_functions # Add an ID to this step to reference its outputs
             uses: google-github-actions/auth@v2
             with:
               credentials_json: ${{ secrets.FIREBASE_FUNCTIONS_DEPLOY_KEY }}
@@ -53,7 +54,8 @@
               npm run lint # Run linting here, now that deps are installed in functions/
               firebase deploy --only functions
             env: # This env block is for this step only
-              FIREBASE_TOKEN: ${{ secrets.FIREBASE_FUNCTIONS_DEPLOY_KEY }} # Pass token as env var
+              # Use GOOGLE_APPLICATION_CREDENTIALS to point to the file created by the auth action
+              GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth_functions.outputs.credentials_file_path }}
 
           # --- Firebase Hosting Deployment Step ---
           - name: Deploy to Firebase Hosting
