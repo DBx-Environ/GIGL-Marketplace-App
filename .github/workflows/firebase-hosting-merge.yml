@@ -22,7 +22,7 @@
           REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS: ${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }}
           REACT_APP_CONTACT_EMAIL: ${{ secrets.REACT_APP_CONTACT_EMAIL }}
           CI: true # Explicitly set CI to true to ensure warnings are treated as errors
-          ACTIONS_STEP_DEBUG: true # <--- ADD THIS LINE FOR DEBUGGING
+          ACTIONS_STEP_DEBUG: true # Keep this for now
 
         steps:
           - name: Checkout code
@@ -48,7 +48,10 @@
           - name: Deploy Cloud Function (via Firebase CLI)
             run: |
               npm install -g firebase-tools # Ensure firebase-tools is available
-              firebase deploy --only functions --token "${{ secrets.FIREBASE_FUNCTIONS_DEPLOY_KEY }}"
+              # Authenticate using FIREBASE_TOKEN environment variable
+              firebase deploy --only functions
+            env: # <--- ADD THIS ENV BLOCK FOR THIS STEP ONLY
+              FIREBASE_TOKEN: ${{ secrets.FIREBASE_FUNCTIONS_DEPLOY_KEY }} # Pass token as env var
 
           # --- Firebase Hosting Deployment Step ---
           - name: Deploy to Firebase Hosting
