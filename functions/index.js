@@ -8,10 +8,11 @@ admin.initializeApp();
 const db = admin.firestore();
 
 // --- Configure Resend API Key ---
-// IMPORTANT: This is an environment variable that you will set securely
-// using `firebase functions:config:set` (see Step 4 in the setup guide).
-// DO NOT hardcode your API key here!
-const resendApiKey = functions.config().resend.apikey;
+// IMPORTANT: These are now read directly from process.env for 2nd Gen Functions.
+// You will set these in the GitHub Actions workflow directly.
+const resendApiKey = process.env.RESEND_API_KEY; // Read from process.env
+const contactEmail = process.env.CONTACT_EMAIL; // Read from process.env
+const senderEmail = process.env.SENDER_EMAIL;   // Read from process.env
 
 /**
  * Helper function to send email via Resend API.
@@ -67,9 +68,9 @@ async function sendEmailResend(fromEmail, toEmail, subject, htmlContent) {
  * @param {object} event - The CloudEvent from the Firestore trigger.
  */
 exports.sendBidNotificationEmail = functions.firestore
-  .onDocumentWritten("artifacts/{appId}/public/data/bids/{bidId}") // <--- 2nd Gen Trigger
-  .region("europe-west2") // <--- Region specified here
-  .onWrite(async (event) => { // <--- Event object for 2nd Gen
+  .onDocumentWritten("artifacts/{appId}/public/data/bids/{bidId}") // 2nd Gen Trigger
+  .region("europe-west2") // Region specified here
+  .onWrite(async (event) => { // Event object for 2nd Gen
     const bidId = event.params.bidId;
     const appId = event.params.appId; // Get appId from the path
 
@@ -82,8 +83,6 @@ exports.sendBidNotificationEmail = functions.firestore
     let opportunityTitle = "";
     let bidAmount = 0;
     let bidderEmail = ""; // To send to the bidder
-    const contactEmail = functions.config().contact.email; // From functions config
-    const senderEmail = functions.config().resend.sender_email; // Verified in Resend
 
     // Determine the action (create, update, delete) and gather data
     if (!event.data.after.exists) { // Delete operation
