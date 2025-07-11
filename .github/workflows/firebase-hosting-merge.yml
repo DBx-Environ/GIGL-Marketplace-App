@@ -66,8 +66,7 @@ jobs:
             --entry-point sendBidNotificationEmail \
             --region europe-west2 \
             --source functions \
-            --set-env-vars RESEND_API_KEY=${{ secrets.RESEND_API_KEY }},CONTACT_EMAIL=${{ secrets.CONTACT_EMAIL }},SENDER_EMAIL=${{ secrets.SENDER_EMAIL }} \
-            --allow-unauthenticated
+            --set-env-vars RESEND_API_KEY=${{ secrets.RESEND_API_KEY }},CONTACT_EMAIL=${{ secrets.CONTACT_EMAIL }},SENDER_EMAIL=${{ secrets.SENDER_EMAIL }} 
 
       # --- Firebase Hosting Deployment Step ---
       - name: Deploy to Firebase Hosting
