@@ -17,7 +17,7 @@
           REACT_APP_FIREBASE_AUTH_DOMAIN: ${{ secrets.REACT_APP_FIREBASE_AUTH_DOMAIN }}
           REACT_APP_FIREBASE_PROJECT_ID: ${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}
           REACT_APP_FIREBASE_STORAGE_BUCKET: ${{ secrets.REACT_APP_FIREBASE_STORAGE_BUCKET }}
-          REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.REACT_APP_MESSAGING_SENDER_ID }}
+          REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}
           REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
           REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS: ${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }}
           REACT_APP_CONTACT_EMAIL: ${{ secrets.REACT_APP_CONTACT_EMAIL }}
@@ -38,12 +38,36 @@
           - name: Build React app
             run: npm run build
 
-          # --- Cloud Functions Deployment Steps (UPDATED) ---
-          # Removed gcloud CLI installation and authentication steps
-          - name: Deploy Cloud Function (via Firebase CLI)
+          # --- Cloud Functions Deployment Steps ---
+          - name: Add Google Cloud GPG key
             run: |
-              npm install -g firebase-tools # Ensure firebase-tools is available
-              firebase deploy --only functions
+              curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+
+          - name: Install gcloud CLI
+            run: |
+              echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+              sudo apt-get update
+              sudo apt-get install google-cloud-cli -y
+
+          - name: Authenticate gcloud CLI (for Functions)
+            uses: google-github-actions/auth@v2
+            with:
+              credentials_json: ${{ secrets.FIREBASE_FUNCTIONS_DEPLOY_KEY }}
+
+          - name: Deploy Cloud Function
+            run: |
+              gcloud functions deploy sendBidNotificationEmail \
+                --runtime nodejs20 \
+                --gen2 \
+                --trigger-event-filters="type=google.cloud.firestore.document.v1.written" \
+                --trigger-event-filters="database=(default)" \
+                --trigger-event-filters="namespace=(default)" \
+                --trigger-event-filters="document=artifacts/${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }}/public/data/bids/{bidId}" \
+                --entry-point sendBidNotificationEmail \
+                --region europe-west2 \
+                --source functions \
+                --set-env-vars RESEND_API_KEY=${{ secrets.RESEND_API_KEY }},CONTACT_EMAIL=${{ secrets.CONTACT_EMAIL }},SENDER_EMAIL=${{ secrets.SENDER_EMAIL }} \
+                --ingress-settings=internal-only # <--- ADD THIS FLAG
 
           # --- Firebase Hosting Deployment Step ---
           - name: Deploy to Firebase Hosting
