@@ -7,7 +7,7 @@ import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, serverTimest
 const AppContext = createContext();
 
 // Custom Message Box Component
-const MessageBox = ({ message, onClose }) => {git add 
+const MessageBox = ({ message, onClose }) => { 
     if (!message) return null;
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
