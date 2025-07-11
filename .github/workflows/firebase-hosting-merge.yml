@@ -63,7 +63,7 @@
                 --entry-point sendBidNotificationEmail \
                 --region europe-west2 \
                 --source functions \
-                --gen1 \ # <--- ADD THIS FLAG TO FORCE 1ST GEN DEPLOYMENT
+                --gen1 \
                 --allow-unauthenticated # Consider removing for production if not strictly needed
 
           # --- Firebase Hosting Deployment Step ---
