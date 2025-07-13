@@ -3,7 +3,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, onAuthStateChanged, signOut, updateProfile, sendPasswordResetEmail } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, serverTimestamp, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
-// --- Context for User and Firebase Instances Hello! 12:33 on 13 july ---
+// --- Context for User and Firebase Instances Hello! :33 on 13 july ---
 const AppContext = createContext();
 
 // Custom Message Box Component
@@ -446,11 +446,29 @@ const ExistingBidsPage = ({ navigate }) => {
 const BidOpportunitiesPage = ({ navigate }) => {
     const { currentUser, bidOpportunities, bids, showMessageBox, db, appId } = useContext(AppContext);
 
-    // In BidOpportunitiesPage component
-const handlePlaceBid = async (opportunityId, currentHighestBid) => {
-    // ... (existing validation code) ...
+    const handlePlaceBid = async (opportunityId, currentHighestBid) => {
+        if (!currentUser) {
+            showMessageBox("You must be logged in to place a bid.");
+            return;
+        }
 
-    try {
+        const bidAmount = parseFloat(prompt("Enter your bid amount:"));
+        if (isNaN(bidAmount) || bidAmount <= 0) {
+            showMessageBox("Invalid bid amount. Please enter a positive number.");
+            return;
+        }
+        if (bidAmount <= currentHighestBid) {
+            showMessageBox(`Your bid must be higher than the current highest bid of $${currentHighestBid}.`);
+            return;
+        }
+
+        const opportunity = bidOpportunities.find(opp => opp.id === opportunityId);
+        if (!opportunity || (opportunity.closingDate && new Date(opportunity.closingDate.toDate()) < new Date())) {
+            showMessageBox("Cannot place bid: The auction has already closed.");
+            return;
+        }
+
+        try {
         console.log("Attempting to add bid to Firestore...");
         // Add the new bid
         const bidDocRef = await addDoc(collection(db, `artifacts/${appId}/public/data/bids`), {
