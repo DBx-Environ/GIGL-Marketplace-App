@@ -18,7 +18,7 @@
           REACT_APP_FIREBASE_PROJECT_ID: ${{ secrets.REACT_APP_FIREBASE_PROJECT_ID }}
           REACT_APP_FIREBASE_STORAGE_BUCKET: ${{ secrets.REACT_APP_FIREBASE_STORAGE_BUCKET }}
           REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.REACT_APP_MESSAGING_SENDER_ID }}
-          REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }} # Corrected from REACT_APP_APP_ID
+          REACT_APP_FIREBASE_APP_ID: ${{ secrets.REACT_APP_FIREBASE_APP_ID }}
           REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS: ${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }}
           REACT_APP_CONTACT_EMAIL: ${{ secrets.REACT_APP_CONTACT_EMAIL }}
           CI: true # Explicitly set CI to true to ensure warnings are treated as errors
@@ -46,10 +46,11 @@
               cd functions # Navigate into the functions directory
               npm ci     # Install functions dependencies (including devDependencies for linting)
               npm run lint # Run linting here, now that deps are installed in functions/
-              firebase deploy --only functions --debug \
-                --set-env-vars MY_APP_ID_FOR_FIRESTORE_PATHS=${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }} # <--- ADDED THIS LINE
+              firebase deploy --only functions --debug # Keep --debug here
             env: # This env block is for this step only
               GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.FIREBASE_FUNCTIONS_DEPLOY_KEY }}
+              # MY_APP_ID_FOR_FIRESTORE_PATHS is passed via the main job env block,
+              # and firebase deploy will pick it up from there.
 
           # --- Firebase Hosting Deployment Step ---
           - name: Deploy to Firebase Hosting
