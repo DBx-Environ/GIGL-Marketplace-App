@@ -1,7 +1,6 @@
 // Import 2nd Gen functions specifically
 const {onDocumentWritten} = require("firebase-functions/v2/firestore");
-// region is used directly in the trigger definition, no need to import it
-// const {region} = require("firebase-functions/v2/options");
+// Import defineString for parameters
 const admin = require("firebase-admin");
 
 // Initialize Firebase Admin SDK (required for interacting with Firestore)
@@ -14,13 +13,14 @@ const db = admin.firestore();
 // IMPORTANT: These are read directly from process.env for 2nd Gen Functions.
 // You will set these in the GitHub Actions workflow directly.
 const resendApiKey = process.env.RESEND_API_KEY;
-// Moved contactEmail and senderEmail declaration inside onWrite function
+// Removed top-level contactEmail and senderEmail declarations
 // const contactEmail = process.env.CONTACT_EMAIL;
 // const senderEmail = process.env.SENDER_EMAIL;
 
 // Use the APP_ID from environment variables for Firestore paths
 // This matches REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS from the frontend
-const APP_ID_FOR_FIRESTORE = process.env.MY_APP_ID_FOR_FIRESTORE_PATHS;
+// Defined as a parameter for deploy-time configuration
+const APP_ID_FOR_FIRESTORE = functions.config().myapp.id;
 
 
 /**
@@ -80,7 +80,8 @@ async function sendEmailResend(fromEmail, toEmail, subject, htmlContent) {
  */
 exports.sendBidNotificationEmail = onDocumentWritten(
     {
-      document: `artifacts/${APP_ID_FOR_FIRESTORE}/public/data/bids/{bidId}`,
+      document: `artifacts/${APP_ID_FOR_FIRESTORE.value()}/` +
+              `public/data/bids/{bidId}`,
       region: "europe-west2", // Region specified here
     },
     async (event) => {
@@ -122,7 +123,7 @@ exports.sendBidNotificationEmail = onDocumentWritten(
         bidAmount = newBid.bidAmount;
         // Fetch bidder's email from the 'users' collection
         const bidderDoc = await db.collection(
-            `artifacts/${APP_ID_FOR_FIRESTORE}/users`,
+            `artifacts/${APP_ID_FOR_FIRESTORE.value()}/users`,
         ).doc(newBid.bidderId).get();
         bidderEmail = bidderDoc.exists ?
         bidderDoc.data().email :
@@ -144,7 +145,7 @@ exports.sendBidNotificationEmail = onDocumentWritten(
         const oldBidAmount = oldBid.bidAmount;
         // Fetch bidder's email from the 'users' collection
         const bidderDoc = await db.collection(
-            `artifacts/${APP_ID_FOR_FIRESTORE}/users`,
+            `artifacts/${APP_ID_FOR_FIRESTORE.value()}/users`,
         ).doc(newBid.bidderId).get();
         bidderEmail = bidderDoc.exists ?
         bidderDoc.data().email :
