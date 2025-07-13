@@ -446,49 +446,37 @@ const ExistingBidsPage = ({ navigate }) => {
 const BidOpportunitiesPage = ({ navigate }) => {
     const { currentUser, bidOpportunities, bids, showMessageBox, db, appId } = useContext(AppContext);
 
-    const handlePlaceBid = async (opportunityId, currentHighestBid) => {
-        if (!currentUser) {
-            showMessageBox("You must be logged in to place a bid.");
-            return;
-        }
+    // In BidOpportunitiesPage component
+const handlePlaceBid = async (opportunityId, currentHighestBid) => {
+    // ... (existing validation code) ...
 
-        const bidAmount = parseFloat(prompt("Enter your bid amount:"));
-        if (isNaN(bidAmount) || bidAmount <= 0) {
-            showMessageBox("Invalid bid amount. Please enter a positive number.");
-            return;
-        }
-        if (bidAmount <= currentHighestBid) {
-            showMessageBox(`Your bid must be higher than the current highest bid of $${currentHighestBid}.`);
-            return;
-        }
+    try {
+        console.log("Attempting to add bid to Firestore...");
+        // Add the new bid
+        const bidDocRef = await addDoc(collection(db, `artifacts/${appId}/public/data/bids`), {
+            opportunityId: opportunityId,
+            bidderId: currentUser.uid,
+            bidAmount: bidAmount,
+            timestamp: serverTimestamp(),
+            opportunityTitle: opportunity.title // Store title for easier display
+        });
+        console.log("Bid document added to Firestore with ID:", bidDocRef.id);
 
-        const opportunity = bidOpportunities.find(opp => opp.id === opportunityId);
-        if (!opportunity || (opportunity.closingDate && new Date(opportunity.closingDate.toDate()) < new Date())) {
-            showMessageBox("Cannot place bid: The auction has already closed.");
-            return;
-        }
+        // Update the bid opportunity with the new highest bid
+        const oppRef = doc(db, `artifacts/${appId}/public/data/bidOpportunities`, opportunityId);
+        await updateDoc(oppRef, {
+            currentHighestBid: bidAmount,
+            highestBidderId: currentUser.uid
+        });
+        console.log("Opportunity updated in Firestore.");
 
-        try {
-            await addDoc(collection(db, `artifacts/${appId}/public/data/bids`), {
-                opportunityId: opportunityId,
-                bidderId: currentUser.uid,
-                bidAmount: bidAmount,
-                timestamp: serverTimestamp(),
-                opportunityTitle: opportunity.title
-            });
-
-            const oppRef = doc(db, `artifacts/${appId}/public/data/bidOpportunities`, opportunityId);
-            await updateDoc(oppRef, {
-                currentHighestBid: bidAmount,
-                highestBidderId: currentUser.uid
-            });
-            console.log(`Bid placed for ${opportunity.title} by ${currentUser.email}. Email notification to be sent by backend.`); // Email trigger acknowledgment
-            showMessageBox("Bid placed successfully!");
-        } catch (error) {
-            console.error("Error placing bid:", error);
-            showMessageBox(`Failed to place bid: ${error.message}`);
-        }
-    };
+        showMessageBox("Bid placed successfully!");
+        console.log(`Bid placed for ${opportunity.title} by ${currentUser.email}. Email notification to be sent by backend.`); // Email trigger acknowledgment
+    } catch (error) {
+        console.error("Error placing bid to Firestore:", error); // Log the actual Firestore error
+        showMessageBox(`Failed to place bid: ${error.message}`);
+    }
+};
 
     return (
         <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-4xl flex flex-col items-center">
