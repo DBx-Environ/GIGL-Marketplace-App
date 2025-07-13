@@ -1,0 +1,28 @@
+{
+  "data": {
+    "before": {},
+    "after": {
+      "exists": true,
+      "data": {
+        "bidAmount": 150,
+        "opportunityTitle": "Test Direct Call Opportunity",
+        "bidderId": "testUserId123",
+        "bidderEmail": "db-env@outlook.com"
+      }
+    }
+  },
+  "context": {
+    "eventId": "test-direct-call-event",
+    "timestamp": "2025-07-13T09:00:00.000Z",
+    "eventType": "google.cloud.firestore.document.v1.written",
+    "resource": {
+      "name": "projects/gigl-marketplace-app/databases/(default)/documents/artifacts/gigl-marketplace/public/data/bids/testDirectBid123",
+      "service": "firestore.googleapis.com",
+      "type": "document"
+    }
+  },
+  "params": {
+    "appId": "gigl-marketplace",
+    "bidId": "testDirectBid123"
+  }
+}

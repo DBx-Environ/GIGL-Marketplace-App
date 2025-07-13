@@ -3,7 +3,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, onAuthStateChanged, signOut, updateProfile, sendPasswordResetEmail } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, serverTimestamp, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
-// --- Context for User and Firebase Instances Hello! 09:33 on 13 july ---
+// --- Context for User and Firebase Instances Hello! 12:33 on 13 july ---
 const AppContext = createContext();
 
 // Custom Message Box Component
