@@ -1,7 +1,9 @@
 // Import 2nd Gen functions specifically
 const {onDocumentWritten} = require("firebase-functions/v2/firestore");
 // Import defineString for parameters
+const {defineString} = require("firebase-functions/params");
 const admin = require("firebase-admin");
+const functions = require("firebase-functions"); // <--- RE-IMPORTED functions
 
 // Initialize Firebase Admin SDK (required for interacting with Firestore)
 admin.initializeApp();
@@ -13,14 +15,11 @@ const db = admin.firestore();
 // IMPORTANT: These are read directly from process.env for 2nd Gen Functions.
 // You will set these in the GitHub Actions workflow directly.
 const resendApiKey = process.env.RESEND_API_KEY;
-// Removed top-level contactEmail and senderEmail declarations
-// const contactEmail = process.env.CONTACT_EMAIL;
-// const senderEmail = process.env.SENDER_EMAIL;
 
 // Use the APP_ID from environment variables for Firestore paths
 // This matches REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS from the frontend
 // Defined as a parameter for deploy-time configuration
-const APP_ID_FOR_FIRESTORE = functions.config().myapp.id;
+const APP_ID_FOR_FIRESTORE = defineString("MY_APP_ID_FOR_FIRESTORE_PATHS");
 
 
 /**
@@ -59,7 +58,7 @@ async function sendEmailResend(fromEmail, toEmail, subject, htmlContent) {
           toEmail,
           ":",
           response.status,
-          data,
+          "data",
       );
       throw new Error(
           `Resend API Error: ${response.status} - ` +
@@ -81,7 +80,7 @@ async function sendEmailResend(fromEmail, toEmail, subject, htmlContent) {
 exports.sendBidNotificationEmail = onDocumentWritten(
     {
       document: `artifacts/${APP_ID_FOR_FIRESTORE.value()}/` +
-              `public/data/bids/{bidId}`,
+              `public/data/bids/{bidId}`, // Line 82 shortened
       region: "europe-west2", // Region specified here
     },
     async (event) => {
@@ -98,8 +97,8 @@ exports.sendBidNotificationEmail = onDocumentWritten(
 
       // Determine the action (create, update, delete) and gather data
       // Declared here, where they are used, to satisfy ESLint
-      const contactEmail = process.env.CONTACT_EMAIL;
-      const senderEmail = process.env.SENDER_EMAIL;
+      const contactEmail = functions.config().contact.email;
+      const senderEmail = functions.config().resend.sender_email;
 
       if (!event.data.after.exists) { // Delete operation
         console.log(`Bid ${bidId} deleted.`);
