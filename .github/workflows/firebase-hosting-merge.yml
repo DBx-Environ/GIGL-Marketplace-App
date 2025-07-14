@@ -23,7 +23,6 @@
           REACT_APP_CONTACT_EMAIL: ${{ secrets.REACT_APP_CONTACT_EMAIL }}
           CI: true # Explicitly set CI to true to ensure warnings are treated as errors
           ACTIONS_STEP_DEBUG: true # Keep this for now
-          # MY_APP_ID_FOR_FIRESTORE_PATHS is passed via --params now, not directly as env to deploy command
 
         steps:
           - name: Checkout code
@@ -47,14 +46,19 @@
             with:
               credentials_json: ${{ secrets.FIREBASE_FUNCTIONS_DEPLOY_KEY }}
 
-          - name: Deploy Cloud Function (via Firebase CLI)
+          - name: Set Function Parameters # <--- ADDED THIS NEW STEP
             run: |
               npm install -g firebase-tools # Ensure firebase-tools is available globally
+              firebase functions:config:set myapp.id="${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }}"
+            env:
+              GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth_functions.outputs.credentials_file_path }}
+
+          - name: Deploy Cloud Function (via Firebase CLI)
+            run: |
               cd functions # Navigate into the functions directory
               npm ci     # Install functions dependencies (including devDependencies for linting)
               npm run lint # Run linting here, now that deps are installed in functions/
-              firebase deploy --only functions --debug \
-                --params MY_APP_ID_FOR_FIRESTORE_PATHS=${{ secrets.REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS }} # <--- ADDED THIS LINE
+              firebase deploy --only functions --debug # Keep --debug here
             env: # This env block is for this step only
               GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth_functions.outputs.credentials_file_path }}
 

@@ -1,7 +1,6 @@
 // Import 2nd Gen functions specifically
 const {onDocumentWritten} = require("firebase-functions/v2/firestore");
 // Import defineString for parameters
-const {defineString} = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const functions = require("firebase-functions"); // <--- RE-IMPORTED functions
 
@@ -19,7 +18,7 @@ const resendApiKey = process.env.RESEND_API_KEY;
 // Use the APP_ID from environment variables for Firestore paths
 // This matches REACT_APP_MY_APP_ID_FOR_FIRESTORE_PATHS from the frontend
 // Defined as a parameter for deploy-time configuration
-const APP_ID_FOR_FIRESTORE = defineString("MY_APP_ID_FOR_FIRESTORE_PATHS");
+const APP_ID_FOR_FIRESTORE = functions.config().myapp.id;
 
 
 /**
